@@ -1,0 +1,143 @@
+<!DOCTYPE html>
+<html lang="es"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes"><meta name="apple-mobile-web-app-title" content="Pesca Cádiz">
+<meta name="theme-color" content="#0a6ea8"><link rel="manifest" href="manifest.webmanifest"><link rel="apple-touch-icon" href="icon-180.png"><link rel="icon" href="icon-192.png">
+<title>Pesca Cádiz · Predicción semanal</title>
+<style>
+:root{--bg:#eef3f7;--cd:#fff;--tx:#0e2230;--mu:#5d6e7b;--ln:#d9e2e9;--ac:#0a6ea8;--g:#1e9e57;--b:#2f7de1;--y:#e3a600;--r:#d94a4a;--x:#6b7580;color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+@media(prefers-color-scheme:dark){:root:not([data-theme=light]){--bg:#08141d;--cd:#10222f;--tx:#e6f0f6;--mu:#8ea3b2;--ln:#1f3646;--ac:#4fb4ea;--g:#2fbf71;--b:#4a93f0;--y:#f0b92a;--r:#ef6666;--x:#7b8794;color-scheme:dark}}
+:root[data-theme=dark]{--bg:#08141d;--cd:#10222f;--tx:#e6f0f6;--mu:#8ea3b2;--ln:#1f3646;--ac:#4fb4ea;--g:#2fbf71;--b:#4a93f0;--y:#f0b92a;--r:#ef6666;--x:#7b8794;color-scheme:dark}
+*{box-sizing:border-box}body{margin:0;padding-bottom:78px;background:var(--bg);color:var(--tx);font:15px/1.35 -apple-system,BlinkMacSystemFont,"SF Pro Text","Helvetica Neue",system-ui,sans-serif;-webkit-text-size-adjust:100%}
+main{max-width:560px;margin:0 auto;padding:12px}
+.cd{background:var(--cd);border:1px solid var(--ln);border-radius:14px;padding:12px;margin-bottom:10px}
+.row{display:flex;gap:8px;align-items:center}.sp{justify-content:space-between}
+h1{font-size:20px;margin:0;letter-spacing:-.01em}h2{font-size:14px;margin:0 0 8px}
+button,input,select{font:inherit;color:inherit}
+.bt{border:1px solid var(--ln);background:var(--cd);border-radius:999px;padding:7px 13px;cursor:pointer;white-space:nowrap}.bt.on{background:var(--ac);border-color:var(--ac);color:#fff}
+.ch{display:flex;gap:6px;overflow-x:auto;padding-bottom:6px;margin-bottom:6px}.ch>*{flex:none}
+.g{background:var(--g)}.b{background:var(--b)}.y{background:var(--y)}.r{background:var(--r)}.x{background:repeating-linear-gradient(45deg,var(--x),var(--x) 4px,var(--r) 4px,var(--r) 8px)}
+.k{min-width:48px;text-align:center;border-radius:10px;color:#fff;font-weight:800;padding:6px 0}.k.y,td.s.y{color:#1d1600}
+.days{display:grid;grid-template-columns:repeat(7,1fr);gap:4px;margin-bottom:10px}
+.dy{border:2px solid transparent;border-radius:10px;background:var(--cd);padding:5px 0;text-align:center;font-size:11px;cursor:pointer}.dy.on{border-color:var(--ac)}
+.dy i{display:block;margin:4px auto 0;width:28px;border-radius:7px;color:#fff;font:700 12px/22px system-ui}.dy i.y{color:#1d1600}
+.gr{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.gr div{font-size:12px;color:var(--mu)}.gr b{display:block;color:var(--tx);font-size:14px}
+.tw{overflow-x:auto}table{border-collapse:collapse;width:100%;font-size:12px;white-space:nowrap}td,th{padding:5px 6px;text-align:center;border-bottom:1px solid var(--ln)}th{color:var(--mu);font-weight:600}
+td.s{color:#fff;font-weight:700;min-width:34px}
+nav{position:fixed;left:0;right:0;bottom:0;display:flex;background:var(--cd);border-top:1px solid var(--ln);padding-bottom:env(safe-area-inset-bottom,0px);z-index:5}
+nav button{flex:1;border:0;background:none;padding:10px 0 8px;font-size:11px;color:var(--mu)}nav .on{color:var(--ac);font-weight:700}
+.sheet{position:fixed;inset:0;background:var(--bg);z-index:9;overflow:auto;padding:12px;padding-top:calc(12px + env(safe-area-inset-top,0px))}
+input,select{width:100%;padding:9px;border:1px solid var(--ln);border-radius:10px;background:var(--cd);margin-bottom:8px}
+.mu{color:var(--mu);font-size:12px}a.bt{text-decoration:none;font-size:12px;color:var(--tx)}
+</style></head><body>
+<main><div class="row sp"><h1>🎣 Pesca Cádiz</h1><span class="mu" id="src"></span></div><div id="v"></div>
+<p class="mu">Índice S = 0,35·M + 0,25·V + 0,15·O + 0,10·P + 0,10·T + 0,05·L. Veto: viento &gt; 40 km/h, ola &gt; 2 m o aviso AEMET. Coordenadas y orientaciones de playa aproximadas; confirma siempre avisos oficiales y accesos antes de salir.</p></main>
+<div id="sh0"></div>
+<nav><button data-a="tab" data-v="fc">🌊<br>Previsión</button><button data-a="tab" data-v="map">🗺️<br>Mapa</button><button data-a="tab" data-v="cmp">⚖️<br>Comparar</button><button data-a="tab" data-v="di">📓<br>Diario</button></nav>
+<script>
+const $=s=>document.querySelector(s),f2=n=>String(n).padStart(2,"0"),cl=(x,a=0,b=100)=>Math.max(a,Math.min(b,x)),ang=(a,b)=>{const d=Math.abs(a-b)%360;return Math.min(d,360-d)};
+const hh=x=>{x=Math.round(((x%24)+24)%24*60);return f2(Math.floor(x/60)%24)+":"+f2(x%60)};
+// b=playa abierta con barras, c=canal/bocana, e=espigón/roca, r=bahía interior/estuario
+const S=[["La Caleta","Cádiz",36.5314,-6.3092,250,"e"],["Cortadura","Cádiz",36.4930,-6.2570,235,"b"],["La Victoria","Cádiz",36.5180,-6.2830,240,"b"],["Santa María del Mar","Cádiz",36.5235,-6.2960,245,"b"],["Espigón de El Cano (Bahía)","Cádiz",36.4890,-6.2430,60,"e"],
+["Camposoto","San Fernando",36.4170,-6.2170,260,"b"],["La Casería","San Fernando",36.4380,-6.2160,80,"r"],["Punta del Boquerón","San Fernando",36.4040,-6.2090,255,"c"],
+["Los Espigones","Puerto Real",36.5300,-6.1900,330,"e"],["La Cachucha","Puerto Real",36.5210,-6.1790,340,"r"],["Río San Pedro","Puerto Real",36.5090,-6.1900,330,"r"],["Los Tres Caños","Puerto Real",36.5185,-6.1650,10,"r"],
+["La Barrosa","Chiclana de la Frontera",36.3680,-6.1900,240,"b"],["Sancti Petri (y espigón)","Chiclana de la Frontera",36.3790,-6.2060,250,"c"],["Lavaculos","Chiclana de la Frontera",36.3430,-6.1740,235,"b"],
+["Valdelagrana","El Puerto de Santa María",36.5830,-6.2400,265,"b"],["La Puntilla","El Puerto de Santa María",36.5985,-6.2420,270,"r"],["Las Redes","El Puerto de Santa María",36.6110,-6.2500,255,"b"],["El Buzo","El Puerto de Santa María",36.6170,-6.2550,240,"b"],["Fuentebravía","El Puerto de Santa María",36.6220,-6.2680,215,"e"],["Santa Catalina","El Puerto de Santa María",36.6200,-6.2610,235,"b"]];
+// nombre, T óptima, k, bonus noche, bonus día, afinidad por fondo (inteligencia por especie)
+const SPC={lubina:["Lubina",16,15,10,-10,{b:3,c:6,e:8,r:4}],dorada:["Dorada",20,10,0,5,{b:3,c:5,e:8,r:6}],sargo:["Sargo",18,10,-5,5,{b:-2,c:4,e:14,r:-2}],herrera:["Herrera",19,10,10,-5,{b:8,c:4,e:2,r:6}]};
+const N0=new Date();N0.setHours(0,0,0,0);const TZ=-N0.getTimezoneOffset()/60,PER=12.4206,DY=864e5;
+const A0=(((N0.getTime()+432e5)/DY+2440587.5-2451550.1)%29.530588+29.530588)%29.530588;
+const Cf=t=>Math.round(cl(70+33*Math.cos(2*Math.PI*((A0+(t-12)/24)-1.5)/14.7653),30,110));
+const HW0=(12.42+TZ+A0*.8412+2.4)%PER,LT=HW0-2.4,hw=t=>HW0+Math.round((t-HW0)/PER)*PER,lw=t=>HW0+PER/2+Math.round((t-HW0-PER/2)/PER)*PER;
+const th=t=>{const p=hw(t);return 2+.0126*Cf(p)*Math.cos(2*Math.PI*(t-p)/PER)};
+const DOY=Math.floor((N0-new Date(N0.getFullYear(),0,0))/DY);
+const sun=d=>{const n=DOY+d,de=23.45*Math.sin(2*Math.PI*(284+n)/365)*Math.PI/180,la=36.53*Math.PI/180,w=Math.acos(-Math.tan(la)*Math.tan(de))*180/Math.PI/15,B=2*Math.PI*(n-81)/364,E=(9.87*Math.sin(2*B)-7.53*Math.cos(B)-1.5*Math.sin(B))/60,m=12.42+TZ-E;return[m-w,m+w]};
+const SUN=[0,1,2,3,4,5,6].map(sun);
+// Meteo simulada (determinista por día); se sustituye por Open-Meteo si hay conexión
+const SE=Math.floor(N0/DY),R=i=>{const x=Math.sin(SE*12.9898+i*78.233)*43758.5453;return x-Math.floor(x)},SD=2+Math.floor(R(3)*5);
+const sim=t=>{const hr=((t%24)+24)%24,s=Math.exp(-(((t-SD*24-14)/9)**2)),s2=Math.exp(-(((t-SD*24-6)/12)**2)),
+v=Math.max(2,12+7*Math.sin(t/17+R(1)*6)+4*Math.sin(t/6+R(2)*6)+4*Math.max(0,Math.sin(Math.PI*(hr-9)/11))+26*s);
+let d=(180+85*Math.sin(t/38+R(4)*6)+10*Math.sin(t/5)+360)%360;d=(d+s*(250-d)+360)%360;
+return{v,d,r:v*1.3+3,h:Math.max(.15,.75+.35*Math.sin(t/29+R(5)*6)+.2*Math.sin(t/9+R(6)*6)+2.1*s),ps:7+3*Math.sin(t/31+R(8)*6)+3*s,sw:250+15*Math.sin(t/20),p:1016+8*Math.sin(t/27+R(7)*6)-14*s2,tw:18.5+3.8*Math.sin(2*Math.PI*(DOY-130)/365)+.3*Math.sin(t/24),av:s>.55}};
+const W=[];for(let t=-6;t<168;t++)W[t+6]=sim(t);
+let src="Datos simulados (demo)";
+async function live(){try{const q="latitude=36.53&longitude=-6.29&timezone=Europe%2FMadrid&past_days=1&forecast_days=7&";
+const[a,m]=await Promise.all([fetch("https://api.open-meteo.com/v1/forecast?"+q+"hourly=wind_speed_10m,wind_direction_10m,wind_gusts_10m,pressure_msl").then(r=>r.json()),fetch("https://marine-api.open-meteo.com/v1/marine?"+q+"hourly=wave_height,wave_period,wave_direction,sea_surface_temperature").then(r=>r.json())]);
+const A=a.hourly,M=m.hourly,N=[];for(let t=-6;t<168;t++){const i=t+24,o=W[t+6];N[t+6]={v:A.wind_speed_10m[i]??o.v,d:A.wind_direction_10m[i]??o.d,r:A.wind_gusts_10m[i]??o.r,p:A.pressure_msl[i]??o.p,h:M.wave_height[i]??o.h,ps:M.wave_period[i]??o.ps,sw:M.wave_direction[i]??o.sw,tw:M.sea_surface_temperature[i]??o.tw,av:false}}
+N.forEach((x,i)=>W[i]=x);src="Open-Meteo en vivo";render()}catch(e){}}
+function calc(si,sp,t){const[,,,,or,ty]=S[si],w=W[t+6],w0=W[t],c=SPC[sp],tp=hw(t),dp=Math.abs(t-tp),db=Math.abs(t-lw(t)),C=Cf(tp),v=w.v;
+let M=dp<=1?(t<=tp?100:75):dp<=2?(t<=tp?90:65):db<=2?60:40;M=cl(M+(C<60?-10:C<76?5:C<=90?10:C<=105?0:-15));
+const dl=ang(w.d,or),rc=w.r-v;let V=v<=10?95:v<=20?75:v<=35?45:v<=40?20:0;
+V=cl(V+(dl<=45?(v>15?-15:0):dl>=135?(v<=25?10:-5):0)+(rc<=15?0:rc<=25?-10:-20));
+const as=ang(w.sw,or),ex=as<=90?cl(Math.cos(as*Math.PI/180)*.9+.1,.15,1):.15,Hs=w.h*ex*(ty=="r"?.4:1);
+let O=Hs<.5?90:Hs<=1?(w.ps>=8?80:60):Hs<=1.5?(w.ps>=10?45:30):Math.max(0,30-20*(Hs-1.5));
+O=cl(O+(ty=="b"?(Hs>=.4&&Hs<=1.2?5:-5):ty=="c"?10:ty=="e"?-10:-5)+c[5][ty]-((ty=="c"||ty=="r")?(C>100?25:C>85?10:0):(C>100?10:0)));
+const dP=w.p-w0.p,pa=w.p,P=cl((dP<=-3?95:dP<=-1?85:dP<=1?60:dP<=3?50:40)+((pa>=1010&&pa<=1025)?0:(pa>=1000&&pa<=1035)?-5:-15));
+const T=cl(100-c[2]*Math.abs(w.tw+(ty=="r"?.8:0)-c[1]));
+const d=Math.floor(t/24),hr=t-d*24,[sr,ss]=SUN[d],tw=Math.abs(hr-sr)<=1||Math.abs(hr-ss)<=1,dy=hr>sr&&hr<ss,tq=LT+Math.round((t-LT)/PER)*PER,so=Math.abs(t-tq)<=1;
+const L=cl((tw?90:dy?45+c[4]:65+c[3])+(so?10:0));
+return{S:Math.round(.35*M+.25*V+.15*O+.1*P+.1*T+.05*L),M,V,O,P,T,L,Hs,w,dP,tw,dy,so,C,up:t<=tp,veto:v>40||Hs>2||w.av}}
+const qc=v=>v>=80?"g":v>=65?"b":v>=50?"y":"r",cc=r=>r.veto?"x":qc(r.S),lb=r=>r.veto?"No recomendable":r.S>=80?"Excelente":r.S>=65?"Buena":r.S>=50?"Aceptable":r.S>=35?"Mediocre":"Adversa";
+const DS=(si,sp,d)=>Array.from({length:24},(_,h)=>calc(si,sp,d*24+h));
+const best=A=>{let b=-1;A.forEach((r,h)=>{if(!r.veto&&(b<0||r.S>A[b].S))b=h});return b};
+const win=A=>{let b=-1,bs=-1;for(let h=0;h<22;h++){const s=A[h].S+A[h+1].S+A[h+2].S;if(!A[h].veto&&!A[h+1].veto&&!A[h+2].veto&&s>bs){bs=s;b=h}}return b};
+const st={tab:"fc",sp:0,spec:"lubina",day:0,hr:null,fav:[],diary:[],lay:"bat",cmp:[],only:false,sheet:false,q:""};
+const ld=()=>{try{Object.assign(st,JSON.parse(localStorage.getItem("pescacadiz1")||"{}"))}catch(e){}},sv=()=>{try{localStorage.setItem("pescacadiz1",JSON.stringify({sp:st.sp,spec:st.spec,fav:st.fav,diary:st.diary}))}catch(e){}};
+const dn=d=>{const x=new Date(N0.getTime()+d*DY+432e5);return["dom","lun","mar","mié","jue","vie","sáb"][x.getDay()]+" "+x.getDate()};
+const gps=i=>{const[,,la,lo]=S[i];return[["Apple Maps",`https://maps.apple.com/?daddr=${la},${lo}`],["Google Maps",`https://www.google.com/maps/dir/?api=1&destination=${la},${lo}`],["Waze",`https://waze.com/ul?ll=${la},${lo}&navigate=yes`]].map(([n,u])=>`<a class="bt" target="_blank" rel="noopener" href="${u}">🧭 ${n}</a>`).join("")};
+const chips=()=>`<div class="ch">${Object.keys(SPC).map(k=>`<button class="bt ${st.spec==k?"on":""}" data-a="spec" data-v="${k}">${SPC[k][0]}</button>`).join("")}</div>`;
+const days=si=>`<div class="days">${[0,1,2,3,4,5,6].map(d=>{let i="";if(si!=null){const A=DS(si,st.spec,d),b=best(A);i=`<i class="${b<0?"x":cc(A[b])}">${b<0?"⚠":A[b].S}</i>`}return`<button class="dy ${st.day==d?"on":""}" data-a="day" data-v="${d}">${dn(d)}${i}</button>`}).join("")}</div>`;
+const arrow=a=>`<span style="display:inline-block;transform:rotate(${Math.round(a+180)}deg)">↑</span>`;
+function tbl(si,d,h0,n){const K=Object.keys(SPC),ix=K.indexOf(st.spec);let o=`<div class="tw"><table><tr><th>Hora</th>${K.map(k=>`<th>${SPC[k][0].slice(0,3)}</th>`).join("")}<th>Viento</th><th>Ola</th><th>hPa</th><th>Marea</th><th>Luz</th></tr>`;
+for(let h=h0;h<h0+n&&h<24;h++){const t=d*24+h,Q=K.map(k=>calc(si,k,t)),r=Q[ix],w=r.w;
+o+=`<tr data-a="hr" data-v="${h}"><td>${f2(h)}</td>${Q.map(x=>`<td class="s ${cc(x)}">${x.veto?"⚠":x.S}</td>`).join("")}<td class="s ${qc(r.V)}">${Math.round(w.v)} ${arrow(w.d)}</td><td class="s ${qc(r.O)}">${r.Hs.toFixed(1)}m ${Math.round(w.ps)}s</td><td class="s ${qc(r.P)}">${Math.round(w.p)}${r.dP>=1?"↗":r.dP<=-1?"↘":"→"}</td><td class="s ${qc(r.M)}">${th(t).toFixed(1)}${r.up?"↑":"↓"}</td><td class="s ${qc(r.L)}">${r.tw?"🌅":r.dy?"☀":"☾"}${r.so?"★":""}</td></tr>`}
+return o+"</table></div>"}
+function chart(A){const w=win(A);let o=`<svg viewBox="0 0 250 96" width="100%" role="img" aria-label="Índice por hora">`;
+if(w>=0)o+=`<rect x="${w*10}" y="0" width="30" height="76" rx="4" style="fill:var(--ac);opacity:.14"/>`;
+A.forEach((r,h)=>{const ht=r.veto?76:Math.max(2,r.S*.76);o+=`<rect data-a="hr" data-v="${h}" x="${h*10+.5}" y="${76-ht}" width="9" height="${ht}" rx="2" style="fill:var(--${cc(r)});${st.hr==h?"stroke:var(--tx);stroke-width:1.5":""}"/>`;if(h%3==0)o+=`<text x="${h*10+4.5}" y="90" font-size="7" text-anchor="middle" style="fill:var(--mu)">${f2(h)}</text>`});return o+"</svg>"}
+const bk=r=>[["Marea",r.M,35],["Viento",r.V,25],["Oleaje y fondo",r.O,15],["Presión",r.P,10],["Agua / especie",r.T,10],["Luz y luna",r.L,5]].map(([n,v,p])=>`<div class="row" style="margin:4px 0"><span style="width:116px;font-size:12px">${n} <span class="mu">${p}%</span></span><div style="flex:1;height:8px;background:var(--ln);border-radius:4px"><div class="${qc(v)}" style="width:${v}%;height:8px;border-radius:4px"></div></div><b style="width:26px;text-align:right;font-size:12px">${Math.round(v)}</b></div>`).join("");
+function vFc(){const si=st.sp,d=st.day,A=DS(si,st.spec,d),b=best(A),w=win(A),h=st.hr!=null?st.hr:(b>=0?b:12),r=A[h],[sr,ss]=SUN[d],s=S[si],ma=(A0+d)%29.5306,mi=Math.floor(((ma+1.846)%29.5306)/3.6913),
+ev=o=>{const a=[];for(let k=-2;k<=16;k++){const e=HW0+o+k*PER;if(e>=d*24&&e<d*24+24)a.push(hh(e))}return a.join(" · ")},veto=A.some(x=>x.veto);
+return`<div class="cd"><div class="row sp"><button class="bt" data-a="sheet" style="flex:1;text-align:left;border-radius:12px"><b>${s[0]}</b><br><span class="mu">${s[1]} · cambiar playa ▾</span></button><button class="bt" data-a="fav" data-v="${si}" aria-label="Favorita">${st.fav.includes(si)?"★":"☆"}</button></div><div class="ch" style="margin:8px 0 0">${gps(si)}</div></div>`
++chips()+days(si)+(veto?`<div class="cd" style="border-color:var(--r)"><b>⚠ Aviso de seguridad</b><br><span class="mu">${b<0?"Jornada descartada: ":"Hay horas bloqueadas por "}viento &gt; 40 km/h, ola &gt; 2 m o aviso (AEMET simulado).</span></div>`:"")
++`<div class="cd"><h2>${SPC[st.spec][0]} · ${dn(d)}</h2><p style="margin:0 0 8px">${w>=0?`<b>Mejor ventana ${hh(w)}–${hh(w+3)}</b> · índice medio ${Math.round((A[w].S+A[w+1].S+A[w+2].S)/3)}`:"<b>Sin ventana segura este día</b>"}</p>${chart(A)}<div class="ch" style="margin:6px 0 0;font-size:11px;gap:10px"><span>🟩 ≥80</span><span>🟦 65–79</span><span>🟨 50–64</span><span>🟥 &lt;50</span><span>⚠ veto</span></div></div>`
++`<div class="cd"><h2>Hora ${f2(h)}:00 · ${lb(r)} · ${r.S}</h2>${bk(r)}</div>`
++`<div class="cd"><div class="gr"><div>Pleamar<b>${ev(0)}</b></div><div>Bajamar<b>${ev(PER/2)}</b></div><div>Coeficiente<b>${Cf(d*24+12)}</b></div><div>Luna<b>${"🌑🌒🌓🌔🌕🌖🌗🌘"[mi*2]||"🌙"} ${Math.round((1-Math.cos(2*Math.PI*ma/29.5306))*50)}%</b></div><div>Sol<b>${hh(sr)} / ${hh(ss)}</b></div><div>Agua<b>${W[d*24+18].tw.toFixed(1)} °C</b></div></div></div>`
++`<div class="cd"><h2>Tabla horaria unificada</h2><div class="mu" style="margin-bottom:6px">Lub · Dor · Sar · Her = índice por especie. Color de viento, ola, presión, marea y luz según su componente (${SPC[st.spec][0]}). Toca una hora para ver el desglose.</div>${tbl(si,d,0,24)}</div>`}
+const P=(lo,la)=>[((lo+6.4)*884).toFixed(0),((36.64-la)*1100).toFixed(0)];
+const LND=[[[-5.9,36.75],[-6.55,36.75],[-6.55,36.61],[-6.35,36.615],[-6.28,36.625],[-6.255,36.615],[-6.245,36.6],[-6.236,36.583],[-6.205,36.567],[-6.19,36.545],[-6.175,36.525],[-6.19,36.505],[-6.21,36.49],[-6.222,36.465],[-6.215,36.44],[-6.2,36.4],[-6.19,36.382],[-6.165,36.362],[-6.14,36.33],[-6.12,36.28],[-5.9,36.28]],[[-6.322,36.531],[-6.3,36.546],[-6.27,36.52],[-6.245,36.495],[-6.228,36.47],[-6.222,36.46],[-6.235,36.455],[-6.26,36.478],[-6.285,36.5],[-6.308,36.52]]];
+function vMap(){const si=st.sp,L=st.lay,cf={bat:["#1d5f86","#d9d0b4","255,255,255"],sat:["#0f3345","#4f6538","120,220,200"],car:["#d3e9f6","#f1e6b4","255,255,255"]}[L],pt=p=>p.map(([a,b])=>P(a,b).join(",")).join(" ");
+let o=chips()+`<div class="ch">${[["bat","Batimetría"],["sat","Satélite"],["car","Carta náutica"]].map(([k,n])=>`<button class="bt ${L==k?"on":""}" data-a="lay" data-v="${k}">${n}</button>`).join("")}</div><div class="cd" style="padding:0;overflow:hidden"><svg viewBox="0 0 360 340" width="100%" style="display:block;background:${cf[0]}">`;
+LND.forEach(p=>[[40,.07],[24,.1],[10,.14]].forEach(([w,a])=>o+=`<polygon points="${pt(p)}" fill="none" stroke="rgba(${cf[2]},${a})" stroke-width="${w}" stroke-linejoin="round"/>`));
+LND.forEach(p=>o+=`<polygon points="${pt(p)}" fill="${cf[1]}"/>`);
+S.forEach((s,i)=>{const[x,y]=P(s[3],s[2]),A=DS(i,st.spec,st.day),b=best(A);o+=`<circle data-a="pick" data-v="${i}" cx="${x}" cy="${y}" r="${i==si?9:6}" style="fill:var(--${b<0?"x":cc(A[b])});stroke:#fff;stroke-width:${i==si?3:1.5}"/>`});
+const s=S[si],[x,y]=P(s[3],s[2]);o+=`<text x="${cl(+x,60,300)}" y="${y-14}" font-size="11" font-weight="700" text-anchor="middle" fill="#fff" stroke="#0008" stroke-width=".4">${s[0]}</text></svg></div><p class="mu" style="margin:-4px 0 8px">Esquema orientativo del litoral, sin teselas externas. Cada punto muestra el mejor índice del día seleccionado.</p>`;
+return o+days(null)+`<div class="cd"><div class="row sp"><div><b>${s[0]}</b><br><span class="mu">${s[1]}</span></div><button class="bt" data-a="fav" data-v="${si}">${st.fav.includes(si)?"★":"☆"}</button></div><div class="ch" style="margin:8px 0 0">${gps(si)}</div></div><div class="cd"><h2>Previsión horaria</h2>${tbl(si,st.day,st.day==0?Math.min(new Date().getHours(),12):6,12)}</div>`}
+function vCmp(){const sp=st.spec,d=st.day,all=S.map((s,i)=>{const A=DS(i,sp,d),b=best(A),h=b<0?12:b;return{i,b,r:A[h],h}});
+let L=st.only?all.filter(x=>st.fav.includes(x.i)):all.slice();L.sort((a,c)=>(c.b>=0)-(a.b>=0)||c.r.S-a.r.S);
+const cp=st.cmp.map(i=>all.find(x=>x.i==i)).filter(Boolean);
+const par=cp.length>1?`<div class="cd"><h2>Comparador en paralelo</h2><div class="tw"><table><tr><th></th>${cp.map(x=>`<th>${S[x.i][0]}</th>`).join("")}</tr>${[["Índice",x=>x.b<0?"⚠":x.r.S],["Mejor hora",x=>f2(x.h)+":00"],["Seguridad",x=>x.b<0?"Descartada":"OK"],["Viento",x=>Math.round(x.r.w.v)+" km/h"],["Ola",x=>x.r.Hs.toFixed(1)+" m"],["Coef.",x=>x.r.C],["Agua",x=>x.r.w.tw.toFixed(1)+" °C"]].map(([n,fn])=>`<tr><th>${n}</th>${cp.map(x=>`<td>${fn(x)}</td>`).join("")}</tr>`).join("")}</table></div></div>`:"";
+return chips()+days(null)+`<div class="ch"><button class="bt ${st.only?"on":""}" data-a="only">★ Solo favoritas</button></div><p class="mu" style="margin:0 0 8px">Ranking de ${SPC[sp][0].toLowerCase()} para ${dn(d)}: primero las seguras, ordenadas por su mejor hora. Pulsa ⇄ para comparar hasta 3.</p>`+par
++(L.map((x,k)=>{const r=x.r,s=S[x.i];return`<div class="cd"><div class="row"><div class="k ${x.b<0?"x":cc(r)}">${x.b<0?"⚠":r.S}</div><div style="flex:1"><b>${k+1}. ${s[0]}</b><br><span class="mu">${s[1]} · ${x.b<0?"No recomendable":lb(r)+" a las "+f2(x.h)+":00"}</span><br><span class="mu">💨 ${Math.round(r.w.v)} km/h · 🌊 ${r.Hs.toFixed(1)} m · coef. ${r.C}</span></div><div class="row"><button class="bt" data-a="fav" data-v="${x.i}">${st.fav.includes(x.i)?"★":"☆"}</button><button class="bt ${st.cmp.includes(x.i)?"on":""}" data-a="cmp" data-v="${x.i}">⇄</button></div></div></div>`}).join("")||`<div class="cd mu">Aún no tienes playas favoritas. Pulsa ☆ en cualquier playa para guardarla.</div>`)}
+function vDi(){const D=st.diary,cap=D.reduce((a,e)=>a+e.cap,0),av=a=>a.length?Math.round(a.reduce((s,e)=>s+e.S,0)/a.length):"–",cb={};
+D.forEach(e=>{const k=(e.cebo||"").toLowerCase();if(k)cb[k]=(cb[k]||0)+e.cap});const tb=Object.entries(cb).sort((a,b)=>b[1]-a[1])[0],nw=new Date().getHours(),r=calc(st.sp,st.spec,nw),esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+const op=(a,sel)=>a.map((n,i)=>`<option value="${i}" ${i==sel?"selected":""}>${n}</option>`).join("");
+return`<div class="cd"><h2>Nueva jornada</h2><select id="ds">${op(S.map(s=>s[0]),st.sp)}</select><select id="dk">${Object.keys(SPC).map(k=>`<option value="${k}" ${k==st.spec?"selected":""}>${SPC[k][0]}</option>`).join("")}</select><input id="dc" placeholder="Cebo (ej. gamba, coquina)"><input id="dn" placeholder="Señuelo"><input id="dl" placeholder="Línea / bajo"><input id="dp" placeholder="Plomo"><div class="row"><input id="dq" type="number" min="0" inputmode="numeric" placeholder="Capturas"><input id="dv" type="number" min="0" inputmode="numeric" placeholder="Picadas"></div><p class="mu" style="margin:0 0 8px">Se guardará con la marea (${r.up?"subiendo":"bajando"}, coef. ${r.C}) y el índice actual (${r.S}).</p><button class="bt on" data-a="dsave" style="width:100%">Guardar jornada</button></div>`
++`<div class="cd"><h2>Estadísticas</h2><div class="gr"><div>Salidas<b>${D.length}</b></div><div>Capturas<b>${cap}</b></div><div>Mejor cebo<b>${tb?esc(tb[0])+" ("+tb[1]+")":"–"}</b></div><div>Índice con captura<b>${av(D.filter(e=>e.cap>0))}</b></div><div>Índice sin captura<b>${av(D.filter(e=>!e.cap))}</b></div><div>Capturas/salida<b>${D.length?(cap/D.length).toFixed(1):"–"}</b></div></div></div>`
++(D.slice(0,20).map((e,i)=>`<div class="cd"><div class="row sp"><b>${esc(S[e.sp][0])} · ${SPC[e.k][0]}</b><button class="bt" data-a="ddel" data-v="${i}" aria-label="Borrar">✕</button></div><span class="mu">${new Date(e.t).toLocaleDateString("es-ES")} · ${e.cap} capturas, ${e.pic} picadas · índice ${e.S} · ${esc(e.mar)}<br>${[e.cebo,e.sen,e.lin,e.plo].map(esc).filter(Boolean).join(" / ")||"Sin material anotado"}</span></div>`).join("")||`<div class="cd mu">Todavía no hay jornadas. Registra la primera para empezar a ver patrones propios.</div>`)}
+function save(){const g=i=>$("#"+i).value.trim(),sp=+$("#ds").value,k=$("#dk").value,r=calc(sp,k,new Date().getHours());st.diary.unshift({t:Date.now(),sp,k,cebo:g("dc"),sen:g("dn"),lin:g("dl"),plo:g("dp"),cap:+g("dq")||0,pic:+g("dv")||0,S:r.S,mar:(r.up?"subiendo":"bajando")+", coef. "+r.C});if(st.diary.length>200)st.diary.pop()}
+const lst=()=>{const q=st.q.toLowerCase(),L=S.map((s,i)=>i).filter(i=>(S[i][0]+" "+S[i][1]).toLowerCase().includes(q)).sort((a,b)=>st.fav.includes(b)-st.fav.includes(a));return L.map(i=>`<div class="cd row sp" data-a="pick" data-v="${i}"><div><b>${S[i][0]}</b><br><span class="mu">${S[i][1]}</span></div><span>${st.fav.includes(i)?"★":""}</span></div>`).join("")||`<p class="mu">Sin resultados. Prueba con otro nombre o municipio.</p>`};
+function render(){$("#v").innerHTML={fc:vFc,map:vMap,cmp:vCmp,di:vDi}[st.tab]();document.querySelectorAll("nav button").forEach(b=>b.classList.toggle("on",b.dataset.v==st.tab));
+$("#sh0").innerHTML=st.sheet?`<div class="sheet"><div class="row sp" style="margin-bottom:8px"><h1>Elegir playa</h1><button class="bt" data-a="close">Cerrar</button></div><input id="q" placeholder="Buscar playa o municipio" value="${st.q}"><div id="ls">${lst()}</div></div>`:"";$("#src").textContent=src}
+document.addEventListener("click",e=>{const el=e.target.closest("[data-a]");if(!el)return;const a=el.dataset.a,v=el.dataset.v,y=scrollY;
+if(a=="tab"){st.tab=v;st.hr=null}else if(a=="sheet")st.sheet=true;else if(a=="close")st.sheet=false;
+else if(a=="pick"){st.sp=+v;st.sheet=false;st.hr=null}
+else if(a=="fav"){const i=+v,k=st.fav.indexOf(i);k<0?st.fav.push(i):st.fav.splice(k,1)}
+else if(a=="spec"){st.spec=v;st.hr=null}else if(a=="day"){st.day=+v;st.hr=null}else if(a=="hr")st.hr=+v;else if(a=="lay")st.lay=v;
+else if(a=="cmp"){const i=+v,k=st.cmp.indexOf(i);if(k<0){st.cmp.push(i);if(st.cmp.length>3)st.cmp.shift()}else st.cmp.splice(k,1)}
+else if(a=="only")st.only=!st.only;else if(a=="dsave")save();else if(a=="ddel")st.diary.splice(+v,1);
+sv();render();scrollTo(0,a=="tab"?0:y)});
+document.addEventListener("input",e=>{if(e.target.id=="q"){st.q=e.target.value;$("#ls").innerHTML=lst()}});
+ld();if(!S[st.sp])st.sp=0;render();live();
+if("serviceWorker"in navigator)navigator.serviceWorker.register("sw.js").catch(()=>{});
+</script></body></html>
